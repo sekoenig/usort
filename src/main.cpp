@@ -9,6 +9,8 @@
 #include <omp.h>
 #include <sstream>
 
+#include <string.h> // needed for memcpy()
+
 
 #ifdef _PROFILE_SORT
 #include "sort_profiler.h"
@@ -42,9 +44,9 @@ enum DistribType{
 
 void printResults(int num_threads, MPI_Comm comm);
 
-void getStats(double val, double *meanV, double *minV, double *maxV, MPI_Comm comm) 
-{ 
-	int p; 
+void getStats(double val, double *meanV, double *minV, double *maxV, MPI_Comm comm)
+{
+	int p;
 	double d, din;
 	din = val;
   MPI_Comm_size(comm, &p);
@@ -109,7 +111,7 @@ long getNumElements(char* code) {
 template <class T>
 bool verify (std::vector<T>& in_, std::vector<T> &out_, MPI_Comm comm){
 
-  // Find out my identity in the default communicator 
+  // Find out my identity in the default communicator
   int myrank, p;
   MPI_Comm_rank(comm, &myrank);
   MPI_Comm_size(comm,&p);
@@ -121,12 +123,12 @@ bool verify (std::vector<T>& in_, std::vector<T> &out_, MPI_Comm comm){
     int N_local=in_.size()*sizeof(T);
     std::vector<int> r_size(p, 0);
     std::vector<int> r_disp(p, 0);
-    MPI_Gather(&N_local  , 1, MPI_INT, 
+    MPI_Gather(&N_local  , 1, MPI_INT,
         &r_size[0], 1, MPI_INT, 0, comm);
     omp_par::scan(&r_size[0], &r_disp[0], p);
 
     if(!myrank) in.resize((r_size[p-1]+r_disp[p-1])/sizeof(T));
-    MPI_Gatherv((char*)&in_[0],    N_local,             MPI_BYTE, 
+    MPI_Gatherv((char*)&in_[0],    N_local,             MPI_BYTE,
         (char*)&in [0], &r_size[0], &r_disp[0], MPI_BYTE, 0, comm);
   }
 
@@ -135,12 +137,12 @@ bool verify (std::vector<T>& in_, std::vector<T> &out_, MPI_Comm comm){
     int N_local=out_.size()*sizeof(T);
     std::vector<int> r_size(p, 0);
     std::vector<int> r_disp(p, 0);
-    MPI_Gather(&N_local  , 1, MPI_INT, 
+    MPI_Gather(&N_local  , 1, MPI_INT,
         &r_size[0], 1, MPI_INT, 0, comm);
     omp_par::scan(&r_size[0], &r_disp[0], p);
 
     if(!myrank) out.resize((r_size[p-1]+r_disp[p-1])/sizeof(T));
-    MPI_Gatherv((char*)&out_[0],    N_local,             MPI_BYTE, 
+    MPI_Gatherv((char*)&out_[0],    N_local,             MPI_BYTE,
         (char*)&out [0], &r_size[0], &r_disp[0], MPI_BYTE, 0, comm);
   }
 
@@ -181,7 +183,7 @@ double time_sort(size_t N, MPI_Comm comm, DistribType dist_type){
       unsigned int seed=j*p+myrank;
       size_t start=(j*N)/omp_p;
       size_t end=((j+1)*N)/omp_p;
-      for(unsigned int i=start;i<end;i++){ 
+      for(unsigned int i=start;i<end;i++){
         in[i]=rand_r(&seed);
       }
     }
@@ -198,7 +200,7 @@ double time_sort(size_t N, MPI_Comm comm, DistribType dist_type){
       unsigned int seed=j*p+myrank;
       size_t start=(j*N)/omp_p;
       size_t end=((j+1)*N)/omp_p;
-      for(unsigned int i=start;i<end;i++){ 
+      for(unsigned int i=start;i<end;i++){
         in[i]= mn + sqrt(-2*log(rand_r(&seed)*1.0/RAND_MAX)/log_e)
               * cos(rand_r(&seed)*2*M_PI/RAND_MAX)*RAND_MAX*0.1;
       }
@@ -214,7 +216,7 @@ double time_sort(size_t N, MPI_Comm comm, DistribType dist_type){
   SORT_FUNCTION<T>(in_cpy, out, comm);
   // par::sampleSort(in_cpy, comm);
   // std::sort(in_cpy.begin(), in_cpy.end());
-  
+
   // std::cout << "Finished sort" << std::endl;
 
 #ifdef __VERIFY__
@@ -224,15 +226,15 @@ double time_sort(size_t N, MPI_Comm comm, DistribType dist_type){
 
 #ifdef _PROFILE_SORT
 	total_sort.clear();
-	
+
 	seq_sort.clear();
 	sort_partitionw.clear();
-	
+
 	sample_get_splitters.clear();
 	sample_sort_splitters.clear();
 	sample_prepare_scatter.clear();
 	sample_do_all2all.clear();
-	
+
 	hyper_compute_splitters.clear();
 	hyper_communicate.clear();
 	hyper_merge.clear();
@@ -252,7 +254,7 @@ double time_sort(size_t N, MPI_Comm comm, DistribType dist_type){
 }
 
 int main(int argc, char **argv){
-  
+
   if (argc < 4) {
     std::cerr << "Usage: " << argv[0] << " numThreads typeSize typeDistrib" << std::endl;
     std::cerr << "\t\t typeSize is a character for type of data follwed by data size per node." << std::endl;
@@ -261,7 +263,7 @@ int main(int argc, char **argv){
     std::cerr << "\t\t i1GB : integer  array of size 1GB" << std::endl;
     std::cerr << "\t\t l1GB : long     array of size 1GB" << std::endl;
 		std::cerr << "\t\t typeDistrib can be UNIF, GAUSS" << std::endl;
-    return 1;  
+    return 1;
   }
 
   std::cout<<setiosflags(std::ios::fixed)<<std::setprecision(4)<<std::setiosflags(std::ios::right);
@@ -273,7 +275,7 @@ int main(int argc, char **argv){
   // Initialize MPI
   MPI_Init(&argc, &argv);
 
-  // Find out my identity in the default communicator 
+  // Find out my identity in the default communicator
   int myrank;
   MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
 
@@ -302,10 +304,10 @@ int main(int argc, char **argv){
   lSize = ftell (fp);
   rewind (fp);
 
-  // test buckets ... 
-  int nl = lSize/100; 
+  // test buckets ...
+  int nl = lSize/100;
   std::vector<sortRecord> qq(nl), out;
-  
+
   // printf("%d: read size is %ld\n", myrank, lSize);
   / *
   srand(myrank*1713);
@@ -322,7 +324,7 @@ int main(int argc, char **argv){
 
   MPI_Barrier(MPI_COMM_WORLD);
   if (!myrank) std::cout << myrank << ": starting approx Select" << std::endl;
-  
+
   std::vector<std::pair<sortRecord, DendroIntL> > sortBins = par::Sorted_approx_Select_skewed(qq, 9, MPI_COMM_WORLD);
 
   if (!myrank) std::cout << myrank << ": finished approx Select" << std::endl;
@@ -337,7 +339,7 @@ int main(int argc, char **argv){
   double t0 = omp_get_wtime();
   par::bucketDataAndWriteSkewed(qq, sortBins, "/tmp/foo", MPI_COMM_WORLD);
   double t1 = omp_get_wtime();
-  
+
   * /
   double t0 = omp_get_wtime();
   // par::HyperQuickSort(qq, out, MPI_COMM_WORLD);
@@ -345,8 +347,8 @@ int main(int argc, char **argv){
   double t1 = omp_get_wtime();
 
   std::cout << myrank << ": all done in " << t1-t0 << std::endl;
-  
-  
+
+
   MPI_Finalize();
   return 0;
   //!----------------------------------
@@ -356,8 +358,8 @@ int main(int argc, char **argv){
   MPI_Comm comm;
 
   std::vector<double> tt(10000,0);
-  
-  int k = 0; // in case size based runs are needed 
+
+  int k = 0; // in case size based runs are needed
   char dtype = argv[2][0];
   long N = getNumElements(argv[2]);
 	DistribType dist_type=getDistType(argv[3]);
@@ -365,7 +367,7 @@ int main(int argc, char **argv){
     std::cerr << "illegal typeSize code provided: " << argv[2] << std::endl;
     return 2;
   }
- 
+
   std::string num;
   std::stringstream mystream;
   mystream << N*p;
@@ -381,17 +383,17 @@ int main(int argc, char **argv){
 
   // std::cout << "dtype: " << dtype << std::endl;
   // check if arguments are ok ...
-    
-  { // -- full size run  
+
+  { // -- full size run
     double ttt;
-    
+
     switch(dtype) {
 			case 'd':
 				ttt = time_sort<double>(N, MPI_COMM_WORLD,dist_type);
 				break;
 			case 'f':
 				ttt = time_sort<float>(N, MPI_COMM_WORLD,dist_type);
-				break;	
+				break;
 			case 'i':
 				ttt = time_sort<int>(N, MPI_COMM_WORLD,dist_type);
 				break;
@@ -402,7 +404,7 @@ int main(int argc, char **argv){
         std::cout << "Unknown type" << std::endl;
         break;
     };
- #ifdef _PROFILE_SORT 			
+ #ifdef _PROFILE_SORT
 		if (!myrank) {
 			std::cout << "---------------------------------------------------------------------------" << std::endl;
 		#ifndef KWICK
@@ -410,7 +412,7 @@ int main(int argc, char **argv){
 		#else
 		  #ifdef SWAPRANKS
 			  std::cout << "\t" << KWAY << "-way SwapRankSort " << "\t\tMean\tMin\tMax" << std::endl;
-      #else	
+      #else
         std::cout << "\t" << KWAY << "-way HyperQuickSort" << "\t\tMean\tMin\tMax" << std::endl;
 		  #endif
 		#endif
@@ -418,7 +420,7 @@ int main(int argc, char **argv){
 		}
 		printResults(num_threads, MPI_COMM_WORLD);
  #endif
-		
+
     if(!myrank){
       tt[100*k+0]=ttt;
       std::cout << "Finished sort in " << ttt << " seconds." << std::endl;
@@ -427,11 +429,11 @@ int main(int argc, char **argv){
 
 	MPI_Finalize();
   return 0;
-  
+
   for(int i=p; myrank<i && i>=min_np; i=i>>1) proc_group++;
   MPI_Comm_split(MPI_COMM_WORLD, proc_group, myrank, &comm);
-	
-  { // smaller /2^k runs 
+
+  { // smaller /2^k runs
     int myrank_;
     MPI_Comm_rank(comm, &myrank_);
     double ttt;
@@ -442,7 +444,7 @@ int main(int argc, char **argv){
 				break;
 			case 'f':
 				ttt = time_sort<float>(N, comm,dist_type);
-				break;	
+				break;
 			case 'i':
         ttt = time_sort<int>(N, comm,dist_type);
         break;
@@ -486,7 +488,7 @@ int main(int argc, char **argv){
     }
   }
 
-  // Shut down MPI 
+  // Shut down MPI
   MPI_Finalize();
    return 0;
  }
@@ -500,8 +502,8 @@ void printResults(int num_threads, MPI_Comm comm) {
 #endif
 		// reduce results
 		double t, meanV, minV, maxV;
-		
-#ifdef _PROFILE_SORT		
+
+#ifdef _PROFILE_SORT
 		if (!myrank) {
 			// std::cout << std::endl;
 			// std::cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << std::endl;
@@ -518,39 +520,39 @@ void printResults(int num_threads, MPI_Comm comm) {
 			std::cout << "Sequential Sort   \t\t\t" << meanV << "\t" << minV << "\t" << maxV <<  std::endl;
 		}
 		t = sort_partitionw.seconds; 	getStats(t, &meanV, &minV, &maxV, comm);
-		if (!myrank) {	
-			std::cout << "partitionW        \t\t\t" << meanV << "\t" << minV << "\t" << maxV <<  std::endl; 
+		if (!myrank) {
+			std::cout << "partitionW        \t\t\t" << meanV << "\t" << minV << "\t" << maxV <<  std::endl;
 			// std::cout << "----------------------------------------------------------------------" << std::endl;
 		}
 #ifndef KWICK
 		t = sample_sort_splitters.seconds; 				getStats(t, &meanV, &minV, &maxV, comm);
-		if (!myrank) {	
-			std::cout << "sort splitters    \t\t\t" << meanV << "\t" << minV << "\t" << maxV <<  std::endl; 
+		if (!myrank) {
+			std::cout << "sort splitters    \t\t\t" << meanV << "\t" << minV << "\t" << maxV <<  std::endl;
 		}
 		t = sample_prepare_scatter.seconds; 				getStats(t, &meanV, &minV, &maxV, comm);
 		if (!myrank) {
-			std::cout << "prepare scatter   \t\t\t" << meanV << "\t" << minV << "\t" << maxV <<  std::endl; 
+			std::cout << "prepare scatter   \t\t\t" << meanV << "\t" << minV << "\t" << maxV <<  std::endl;
 		}
-		t = sample_do_all2all.seconds; 				getStats(t, &meanV, &minV, &maxV, comm);	
+		t = sample_do_all2all.seconds; 				getStats(t, &meanV, &minV, &maxV, comm);
 		if (!myrank) {
-			std::cout << "all2all           \t\t\t" << meanV << "\t" << minV << "\t" << maxV <<  std::endl; 
-		}			 
+			std::cout << "all2all           \t\t\t" << meanV << "\t" << minV << "\t" << maxV <<  std::endl;
+		}
 #else
-		t = hyper_compute_splitters.seconds; 				getStats(t, &meanV, &minV, &maxV, comm);		
-		if (!myrank) {	
-			std::cout << "compute splitters \t\t\t" << meanV << "\t" << minV << "\t" << maxV <<  std::endl; 
+		t = hyper_compute_splitters.seconds; 				getStats(t, &meanV, &minV, &maxV, comm);
+		if (!myrank) {
+			std::cout << "compute splitters \t\t\t" << meanV << "\t" << minV << "\t" << maxV <<  std::endl;
 		}
-		t = hyper_communicate.seconds; 				getStats(t, &meanV, &minV, &maxV, comm);	
-		if (!myrank) {	
-			std::cout << "exchange data     \t\t\t" << meanV << "\t" << minV << "\t" << maxV <<  std::endl; 
+		t = hyper_communicate.seconds; 				getStats(t, &meanV, &minV, &maxV, comm);
+		if (!myrank) {
+			std::cout << "exchange data     \t\t\t" << meanV << "\t" << minV << "\t" << maxV <<  std::endl;
 		}
-		t = hyper_merge.seconds; 				getStats(t, &meanV, &minV, &maxV, comm);	
-		if (!myrank) {	
-			std::cout << "merge arrays      \t\t\t" << meanV << "\t" << minV << "\t" << maxV <<  std::endl; 
+		t = hyper_merge.seconds; 				getStats(t, &meanV, &minV, &maxV, comm);
+		if (!myrank) {
+			std::cout << "merge arrays      \t\t\t" << meanV << "\t" << minV << "\t" << maxV <<  std::endl;
 		}
-		t = hyper_comm_split.seconds; 				getStats(t, &meanV, &minV, &maxV, comm);	
-		if (!myrank) {	
-			std::cout << "comm split        \t\t\t" << meanV << "\t" << minV << "\t" << maxV <<  std::endl; 
+		t = hyper_comm_split.seconds; 				getStats(t, &meanV, &minV, &maxV, comm);
+		if (!myrank) {
+			std::cout << "comm split        \t\t\t" << meanV << "\t" << minV << "\t" << maxV <<  std::endl;
 		}
     if (!myrank) {
       std::string num;
@@ -562,15 +564,15 @@ void printResults(int num_threads, MPI_Comm comm) {
         num.insert(insertPosition, ",");
         insertPosition-=3;
       }
-      std::cout << "total comm        \t\t\t" << num << " bytes" <<  std::endl; 
+      std::cout << "total comm        \t\t\t" << num << " bytes" <<  std::endl;
     }
 
 #endif
 #endif
-		if (!myrank) {			
+		if (!myrank) {
 			// std::cout << "---------------------------------------------------------------------------" << std::endl;
 			std::cout << "" << std::endl;
-		}			 
+		}
 }
 
 #define  FALSE          0       // Boolean false
