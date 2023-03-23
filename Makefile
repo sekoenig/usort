@@ -1,7 +1,7 @@
 # Simple Makefile to build usort as a static library.
 
 MPICXX ?= mpicxx
-CFLAGS ?= -O3 -fopenmp
+CFLAGS ?= -O3 -fopenmp -std=c++11
 LFLAGS ?= -fopenmp
 
 PREFIX ?= /usr/local
@@ -30,15 +30,20 @@ HEADERS = $(addprefix $(INCLUDE)/, $(USORT_HEADERS))
 
 OBJECTS = $(SOURCES:.cpp=.o)
 
-.PHONY: all lib clean install
+.PHONY: all lib test main clean install
 
-all: lib
+all: lib test
 
 clean:
 	rm -f $(OBJECTS)
 	rm -f *.a
 
 lib: $(LIBNAME).a
+
+test: main
+
+main: $(LIBNAME).a $(SRC)/main.o
+	$(MPICXX) $ $(LFLAGS) $(SRC)/main.o ./$(LIBNAME).a -o $@
 
 libusort.a: $(OBJECTS)
 	$(AR) -rcs $@ $(OBJECTS)
