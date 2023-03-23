@@ -23,7 +23,7 @@ namespace omp_par {
 
 }
 
-#include "ompUtils.tcc"
+#include "ompUtils.hpp"
 
 #endif
 

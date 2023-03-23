@@ -47,7 +47,7 @@ void omp_par::merge(T A_,T A_last,T B_,T B_last,T C_,int p,StrictWeakOrdering co
     }
   }
 
-  //Find the closest split position for each thread that will 
+  //Find the closest split position for each thread that will
   //divide the final array equally between the threads.
   _DiffType* split_indx_A=new _DiffType[p+1];
   _DiffType* split_indx_B=new _DiffType[p+1];
@@ -97,7 +97,7 @@ void omp_par::merge_sort(T A,T A_last,StrictWeakOrdering comp){
   typedef typename std::iterator_traits<T>::value_type _ValType;
 
   int p=omp_get_max_threads();
-  _DiffType N=A_last-A; 
+  _DiffType N=A_last-A;
   if(N<2*p || p==1){
     std::sort(A,A_last,comp);
     return;
@@ -173,7 +173,7 @@ void omp_par::merge_sort_ptrs(T A,T A_last){
   int p=omp_get_max_threads();
   typedef typename std::iterator_traits<T>::difference_type _DiffType;
   typedef typename std::iterator_traits<T>::value_type _ValType;
-  _DiffType N=A_last-A; 
+  _DiffType N=A_last-A;
 
   // Make copy and init pointer array to be sorted.
   DataPtr<_ValType>* B=new DataPtr<_ValType>[N];

@@ -1,6 +1,6 @@
 
 /**
-  @file seqUtils.txx
+  @file seqUtils.hpp
   @brief Definitions of the templated functions in the seq module.
   @author Rahul S. Sampath, rahul.sampath@gmail.com
  */
@@ -16,7 +16,7 @@ namespace seq {
     bool BinarySearch(const T* arr, unsigned int nelem, const T & key, unsigned int *ret_idx) {
       if(!nelem) {*ret_idx = nelem; return false;}
       unsigned int left = 0;
-      unsigned int right = (nelem -1);	
+      unsigned int right = (nelem -1);
       while (left <= right) {
         unsigned int mid =
           (unsigned int)( left + (unsigned int)(floor((double)(right-left)/2.0)) );
@@ -31,7 +31,7 @@ namespace seq {
           return true;
         }//end if-else-if
       }//end while
-      *ret_idx = nelem;	
+      *ret_idx = nelem;
       return false;
     }//end function
 
@@ -61,10 +61,10 @@ namespace seq {
       if(arr[nelem-1] < key) {
         ret_idx = (nelem-1);
         return true;
-      }//end if	
+      }//end if
       //binary search
       unsigned int left = 0;
-      unsigned int right = (nelem -1);	
+      unsigned int right = (nelem -1);
       unsigned int mid = 0;
       if(leftIdx) {
         left = (*leftIdx);
@@ -90,9 +90,9 @@ namespace seq {
       }//end while
 
       //If binary search did not find an exact match, it would have
-      //stopped one element after or one element before. 
+      //stopped one element after or one element before.
 
-      if( (arr[mid] > key) && (mid > 0) ){ mid--; }	
+      if( (arr[mid] > key) && (mid > 0) ){ mid--; }
       if(arr[mid] <= key ) { ret_idx = mid; return true; }
       else { ret_idx = 0; return false;}
     }//end function
@@ -107,7 +107,7 @@ namespace seq {
     tmpPtr[0] = vecTptr[0];
     unsigned int tmpSize=1;
     unsigned int vecTsz = static_cast<unsigned int>(vecT.size());
-    for(unsigned int i = 1; i < vecTsz; i++) {	
+    for(unsigned int i = 1; i < vecTsz; i++) {
       if(tmpPtr[tmpSize-1] != vecTptr[i]) {
         tmpPtr[tmpSize] = vecTptr[i];
         tmpSize++;
@@ -161,7 +161,7 @@ namespace seq {
 
         hold=a[nmax];
         a[nmax]=a[0];
-        a[0]=hold; 
+        a[0]=hold;
         /**** PERMUTATION *****/
 
         nmove=0;
@@ -277,4 +277,4 @@ namespace seq {
     }
 */
 
- 
+
