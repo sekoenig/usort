@@ -22,7 +22,8 @@ USORT_HEADERS = binUtils.h \
                 ompUtils.h ompUtils.hpp \
                 indexHolder.h \
                 dtypes.h \
-                sort_profiler.h
+                sort_profiler.h \
+                usort.h
 
 SOURCES = $(addprefix $(SRC)/, $(USORT_SOURCES))
 HEADERS = $(addprefix $(INCLUDE)/, $(USORT_HEADERS))
